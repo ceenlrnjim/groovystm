@@ -1,0 +1,15 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+group='groovystm'
+version='1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    groovy group: 'org.clojure', name: 'clojure', version: '1.3.0'
+    groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.10'
+}
