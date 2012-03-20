@@ -1,5 +1,6 @@
 package gvystm
 
+import clojure.lang.Atom;
 import clojure.lang.Ref;
 import clojure.lang.PersistentHashMap;
 import org.junit.Test
@@ -9,6 +10,7 @@ import static gvystm.STM.doSync
 import static gvystm.STM.alter
 import static gvystm.STM.ensure
 import static gvystm.STM.addWatch
+import static gvystm.STM.swap
 
 class STMTest {
 
@@ -77,5 +79,12 @@ class STMTest {
         }
 
         assertEquals fired, true
+    }
+
+    @Test
+    void testAtomSwap() {
+        Atom a = new Atom(100);
+        swap(a) { v -> v * 2 }
+        assertEquals a.deref(), 200
     }
 }

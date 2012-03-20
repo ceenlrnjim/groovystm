@@ -1,6 +1,7 @@
 package gvystm
 
 import clojure.lang.LockingTransaction
+import clojure.lang.Atom
 import clojure.lang.Ref
 import clojure.lang.IRef
 import java.util.concurrent.Callable
@@ -37,5 +38,10 @@ class STM {
     */
     static void addWatch(IRef r, Object key, Closure c) {
         r.addWatch(key, new WatchClosureFn(c));
+    }
+
+    /** see clojure swap! function and atoms - closure must take the current value and return the new value */
+    static Object swap(Atom a, Closure c) {
+        return a.swap(new SwapClosureFn(c))
     }
 }
