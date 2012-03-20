@@ -87,9 +87,11 @@ class STM {
         }
 
         Var.pushThreadBindings(PersistentHashMap.create(varMap))
-        c()
-        // TODO: need some finally
-        Var.popThreadBindings()
+        try {
+            c()
+        } finally {
+            Var.popThreadBindings()
+        }
     }
 
     /** Calls the specified closure with the current thread bindings */
