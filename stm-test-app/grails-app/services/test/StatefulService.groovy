@@ -1,6 +1,7 @@
 package test
 
 import static gvystm.STM.doSync
+import static gvystm.STM.alter
 import clojure.lang.Ref
 import clojure.lang.PersistentHashMap;
 
@@ -12,8 +13,7 @@ class StatefulService {
 
     def addValue(String key, String value) {
         doSync {
-            Map valueMap = valueMapRef.deref();
-            valueMapRef.set(valueMap.assoc(key,value));
+            alter(valueMapRef) { m -> m.assoc(key,value) }
         }
     }
 
