@@ -3,7 +3,10 @@ package gvystm
 import clojure.lang.LockingTransaction
 import clojure.lang.Atom
 import clojure.lang.Ref
+import clojure.lang.Var
 import clojure.lang.IRef
+import clojure.lang.PersistentHashMap
+import clojure.lang.Associative
 import java.util.concurrent.Callable
 
 class STM {
@@ -32,6 +35,10 @@ class STM {
         r.deref()
     }
 
+    static Object deref(IRef r) {
+        r.deref();
+    }
+
     /** Adds a callback that will get invoked when the value of the specified reference/atom/agent/etc. is changed.
     *   See clojure add-watch function.
     *   The specified closure should take 4 arguments - key, reference, old value and new value
@@ -48,4 +55,40 @@ class STM {
     static Object swap(Atom a, Closure c) {
         return a.swap(new SwapClosureFn(c))
     }
+
+    // TODO: add agent support
+    /** Sets the bindings into the threadlocal scope */
+    static void binding(Map bindings, Closure c) {
+        Map varMap = new HashMap();
+        bindings.every { key, value -> 
+            Var v = Var.create(key)
+            v.setDynamic()
+            varMap.put(v, value) 
+        }
+
+        Var.pushThreadBindings(PersistentHashMap.create(varMap))
+        c()
+        // TODO: need some finally
+        Var.popThreadBindings()
+    }
+
+    /** Calls the specified closure with the current thread bindings */
+    static void withCurrentBindings(Closure c) {
+        //Associative bindings = Var.getThreadBindings();
+        c(Var.getThreadBindings());
+    }
+
+    // TODO: is there a better way in the clojure collections?
+    /*private static Map associativeToMap(Associative a) {
+        IPersistentMap ret = PersistentHashMap.EMPTY;
+        for(ISeq bs = a.seq(); bs != null; bs = bs.next())
+            {
+            IMapEntry e = (IMapEntry) bs.first();
+            Var v = (Var) e.key();
+            TBox b = (TBox) e.val();
+            ret = ret.assoc(v, b.val);
+            }
+        return ret;
+
+    }*/
 }

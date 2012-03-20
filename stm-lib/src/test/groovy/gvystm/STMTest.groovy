@@ -8,6 +8,9 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
 import static gvystm.STM.doSync
 import static gvystm.STM.alter
+import static gvystm.STM.binding
+import static gvystm.STM.withCurrentBindings
+import static gvystm.STM.deref
 import static gvystm.STM.ensure
 import static gvystm.STM.addWatch
 import static gvystm.STM.removeWatch
@@ -21,7 +24,7 @@ class STMTest {
         doSync {
             alter(valueMapRef) { m -> m.assoc(1,100) }
         }
-        assertEquals 100, valueMapRef.deref().get(1);
+        assertEquals 100, deref(valueMapRef).get(1);
     }
 
     @Test
@@ -47,7 +50,7 @@ class STMTest {
             doSync {
                 ensure(r)
                 Thread.sleep(1000);
-                alter(r2) { v -> r.deref() * 2 }
+                alter(r2) { v -> deref(r) * 2 }
             }
         }
 
@@ -58,8 +61,8 @@ class STMTest {
         }
 
         Thread.sleep(2000)
-        assertEquals r.deref(), -1
-        assertEquals r2.deref(), 200
+        assertEquals deref(r), -1
+        assertEquals deref(r2), 200
     }
 
     @Test
@@ -101,7 +104,7 @@ class STMTest {
     void testAtomSwap() {
         Atom a = new Atom(100);
         swap(a) { v -> v * 2 }
-        assertEquals a.deref(), 200
+        assertEquals deref(a), 200
     }
 
     @Test
@@ -116,6 +119,29 @@ class STMTest {
         }
 
         swap(a) { v -> v + 1 }
-        assertEquals a.deref(), 1
+        assertEquals deref(a), 1
+    }
+
+    @Test
+    void testBindings() {
+
+        Thread.start {
+            binding([name: "Jim", id: 1]) {
+                testBindingValues("Jim", 1)
+            }
+        }
+
+        Thread.start {
+            binding([name: "Jeff", id: 2]) {
+                testBindingValues("Jeff", 1)
+            }
+        }
+    }
+
+    void TestBindingValues(String name, int id) {
+        withCurrentBindings { m ->
+            assertEquals m.name, name
+            assertEquals m.id, id
+        }
     }
 }
