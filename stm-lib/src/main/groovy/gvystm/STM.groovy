@@ -2,6 +2,7 @@ package gvystm
 
 import clojure.lang.LockingTransaction
 import clojure.lang.Ref
+import clojure.lang.IRef
 import java.util.concurrent.Callable
 
 class STM {
@@ -28,5 +29,13 @@ class STM {
     static Object ensure(Ref r) {
         r.touch()
         r.deref()
+    }
+
+    /** Adds a callback that will get invoked when the value of the specified reference/atom/agent/etc. is changed.
+    *   See clojure add-watch function.
+    *   The specified closure should take 4 arguments - key, reference, old value and new value
+    */
+    static void addWatch(IRef r, Object key, Closure c) {
+        r.addWatch(key, new WatchClosureFn(c));
     }
 }

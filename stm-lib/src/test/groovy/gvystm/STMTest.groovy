@@ -8,6 +8,7 @@ import static org.junit.Assert.fail
 import static gvystm.STM.doSync
 import static gvystm.STM.alter
 import static gvystm.STM.ensure
+import static gvystm.STM.addWatch
 
 class STMTest {
 
@@ -56,5 +57,25 @@ class STMTest {
         Thread.sleep(2000)
         assertEquals r.deref(), -1
         assertEquals r2.deref(), 200
+    }
+
+    @Test
+    void testRefAddWatch() {
+        Ref r = new Ref(0);
+        String k = "unitTestCallback"
+        def fired = false
+
+        addWatch(r, k) { key, ref, oldValue, newValue ->
+            assertEquals oldValue, 0
+            assertEquals newValue, 100
+            // note: normally don't want side effects
+            fired = true
+        }
+
+        doSync {
+            alter(r) { 100 }
+        }
+
+        assertEquals fired, true
     }
 }
