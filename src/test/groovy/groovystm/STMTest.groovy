@@ -1,4 +1,4 @@
-package gvystm
+package groovystm
 
 import clojure.lang.Atom;
 import clojure.lang.Ref;
@@ -6,16 +6,16 @@ import clojure.lang.PersistentHashMap;
 import org.junit.Test
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
-import static gvystm.STM.doSync
-import static gvystm.STM.alter
-import static gvystm.STM.refSet
-import static gvystm.STM.binding
-import static gvystm.STM.withCurrentBindings
-import static gvystm.STM.deref
-import static gvystm.STM.ensure
-import static gvystm.STM.addWatch
-import static gvystm.STM.removeWatch
-import static gvystm.STM.swap
+import static groovystm.STM.doSync
+import static groovystm.STM.alter
+import static groovystm.STM.refSet
+import static groovystm.STM.binding
+import static groovystm.STM.withCurrentBindings
+import static groovystm.STM.deref
+import static groovystm.STM.ensure
+import static groovystm.STM.addWatch
+import static groovystm.STM.removeWatch
+import static groovystm.STM.swap
 
 class STMTest {
 
