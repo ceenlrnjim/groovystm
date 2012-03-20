@@ -106,5 +106,16 @@ class STMTest {
 
     @Test
     void testAtomWatch() {
+        Atom a = new Atom(0)
+        def fired = false
+
+        addWatch(a, "AtomWatchKey") { key, ref, oldval, newval ->
+            fired = true
+            assertEquals oldval, 0
+            assertEquals newval, 1
+        }
+
+        swap(a) { v -> v + 1 }
+        assertEquals a.deref(), 1
     }
 }
