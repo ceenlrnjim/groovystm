@@ -3,6 +3,7 @@ package gvystm
 import clojure.lang.LockingTransaction
 import clojure.lang.Atom
 import clojure.lang.Ref
+import clojure.lang.RT
 import clojure.lang.Var
 import clojure.lang.IRef
 import clojure.lang.PersistentHashMap
@@ -57,11 +58,13 @@ class STM {
     }
 
     // TODO: add agent support
+
     /** Sets the bindings into the threadlocal scope */
     static void binding(Map bindings, Closure c) {
         Map varMap = new HashMap();
-        bindings.every { key, value -> 
-            Var v = Var.create(key)
+        bindings.each { key, value -> 
+            // TODO: how to handle namespaces?
+            Var v = RT.var("hardcodedfornow",key.toString(), key)
             v.setDynamic()
             varMap.put(v, value) 
         }
@@ -74,21 +77,11 @@ class STM {
 
     /** Calls the specified closure with the current thread bindings */
     static void withCurrentBindings(Closure c) {
-        //Associative bindings = Var.getThreadBindings();
-        c(Var.getThreadBindings());
+        // All kinds of ugly dependency on internal implementations
+        Map currVals = (Map)Var.getThreadBindings();
+        Map usableVals = new HashMap()
+        currVals.each { var, value -> usableVals.put(var.sym.getName(), value) }
+            
+        c(usableVals)
     }
-
-    // TODO: is there a better way in the clojure collections?
-    /*private static Map associativeToMap(Associative a) {
-        IPersistentMap ret = PersistentHashMap.EMPTY;
-        for(ISeq bs = a.seq(); bs != null; bs = bs.next())
-            {
-            IMapEntry e = (IMapEntry) bs.first();
-            Var v = (Var) e.key();
-            TBox b = (TBox) e.val();
-            ret = ret.assoc(v, b.val);
-            }
-        return ret;
-
-    }*/
 }

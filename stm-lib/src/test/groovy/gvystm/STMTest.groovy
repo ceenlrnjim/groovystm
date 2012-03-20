@@ -49,7 +49,7 @@ class STMTest {
         def t1 = Thread.start {
             doSync {
                 ensure(r)
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 alter(r2) { v -> deref(r) * 2 }
             }
         }
@@ -61,8 +61,8 @@ class STMTest {
         }
 
         Thread.sleep(2000)
-        assertEquals deref(r), -1
-        assertEquals deref(r2), 200
+        assertEquals(-1, deref(r))
+        assertEquals(200, deref(r2))
     }
 
     @Test
@@ -124,24 +124,27 @@ class STMTest {
 
     @Test
     void testBindings() {
-
-        Thread.start {
-            binding([name: "Jim", id: 1]) {
-                testBindingValues("Jim", 1)
+        binding(['name': 'Jim', 'id': '1']) {
+            withCurrentBindings { m -> 
+                println m
+                assertEquals m['name'], "Jim" 
+                assertEquals m['id'],'1'
             }
+            testBindingValues()
         }
+        //testNoBindingValues()
+    }
 
-        Thread.start {
-            binding([name: "Jeff", id: 2]) {
-                testBindingValues("Jeff", 1)
-            }
+    void testBindingValues() {
+        withCurrentBindings { m ->
+            assertEquals m['name'], "Jim"
+            assertEquals m['id'],'1'
         }
     }
 
-    void TestBindingValues(String name, int id) {
+    void testNoBindingValues() {
         withCurrentBindings { m ->
-            assertEquals m.name, name
-            assertEquals m.id, id
+            assertEquals m, null
         }
     }
 }
