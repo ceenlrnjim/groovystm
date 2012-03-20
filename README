@@ -1,6 +1,3 @@
-stm-lib contains a groovy library/dsl for using clojure's STM in groovy/grails applications
-
-for the moment ignore the plugin and test app directories.  See the unit tests in stm-lib for examples of how to use the STM object.
-
+a groovy library/dsl for using clojure's STM in groovy/grails applications
 Note, it is highly recommended that you understand how to use the objects in clojure first
 
