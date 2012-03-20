@@ -42,8 +42,6 @@ class STMTest {
 
     @Test
     void testEnsure() {
-        // TODO: something is wrong with this test
-        // getting errors sometimes
         Ref r = new Ref(100);
         Ref r2 = new Ref(0);
 
@@ -55,6 +53,7 @@ class STMTest {
             }
         }
 
+        Thread.sleep(500);
         def t2 = Thread.start {
             doSync {
                 alter(r) { -1 }
