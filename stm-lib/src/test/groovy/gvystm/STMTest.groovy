@@ -42,7 +42,8 @@ class STMTest {
 
     @Test
     void testEnsure() {
-        // TODO: how do I test this?
+        // TODO: something is wrong with this test
+        // getting errors sometimes
         Ref r = new Ref(100);
         Ref r2 = new Ref(0);
 
@@ -132,7 +133,7 @@ class STMTest {
             }
             testBindingValues()
         }
-        //testNoBindingValues()
+        testNoBindingValues()
     }
 
     void testBindingValues() {
@@ -144,7 +145,7 @@ class STMTest {
 
     void testNoBindingValues() {
         withCurrentBindings { m ->
-            assertEquals m, null
+            assertEquals true, m.isEmpty()
         }
     }
 }
