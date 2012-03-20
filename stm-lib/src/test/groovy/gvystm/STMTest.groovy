@@ -10,6 +10,7 @@ import static gvystm.STM.doSync
 import static gvystm.STM.alter
 import static gvystm.STM.ensure
 import static gvystm.STM.addWatch
+import static gvystm.STM.removeWatch
 import static gvystm.STM.swap
 
 class STMTest {
@@ -82,9 +83,28 @@ class STMTest {
     }
 
     @Test
+    void removeWatch() {
+        Ref r = new Ref(100);
+        def fired = false;
+
+        addWatch(r, "key") {
+            fired = true;
+        }
+
+        removeWatch(r, "key")
+
+        doSync { alter(r) { 0 } }
+        assertEquals fired, false
+    }
+
+    @Test
     void testAtomSwap() {
         Atom a = new Atom(100);
         swap(a) { v -> v * 2 }
         assertEquals a.deref(), 200
+    }
+
+    @Test
+    void testAtomWatch() {
     }
 }

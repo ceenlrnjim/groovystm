@@ -40,6 +40,10 @@ class STM {
         r.addWatch(key, new WatchClosureFn(c));
     }
 
+    static void removeWatch(IRef r, Object key) {
+        r.removeWatch(key)
+    }
+
     /** see clojure swap! function and atoms - closure must take the current value and return the new value */
     static Object swap(Atom a, Closure c) {
         return a.swap(new SwapClosureFn(c))
