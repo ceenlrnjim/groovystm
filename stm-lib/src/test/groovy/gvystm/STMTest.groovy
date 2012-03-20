@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
 import static gvystm.STM.doSync
 import static gvystm.STM.alter
+import static gvystm.STM.refSet
 import static gvystm.STM.binding
 import static gvystm.STM.withCurrentBindings
 import static gvystm.STM.deref
@@ -28,8 +29,19 @@ class STMTest {
     }
 
     @Test
+    void testRefSet() {
+        Ref r = new Ref(100)
+        doSync {
+            refSet(r, 200)
+        }
+
+        assertEquals 200, deref(r)
+    }
+
+    @Test
     void testNoTrans()  {
         Ref r = new Ref(100);
+        boolean exceptionThrown = false
 
         try {
             r.set(200);
@@ -37,7 +49,9 @@ class STMTest {
         }
         catch (IllegalStateException e) {
             // this should be thrown since a transaction wasn't started
+            exceptionThrown = true
         }
+        assertEquals true, exceptionThrown
     }
 
     @Test

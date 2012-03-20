@@ -11,6 +11,9 @@ import clojure.lang.Associative
 import java.util.concurrent.Callable
 
 class STM {
+    /** Executes the specified closure in a clojure LockingTransaction, allowing
+    *   changes to Refs. Make sure an use immutable values for your Refs or you get no guarantees from the STM
+    */
     static void doSync(Closure c) {
         LockingTransaction.runInTransaction(new Callable<Void>() {
             public Void call() throws Exception {
@@ -23,11 +26,15 @@ class STM {
     /** Calls the specified closure with the current value of the ref and sets
     *   the ref to the value returned.  Must be executed in a doSync block 
     *   See rules for the alter function in clojure. Inspired by, but definitely different than
-    *   the clojure alter function
+    *   the clojure alter function.  
     */
     static void alter(Ref r, Closure c) {
         def v = r.deref();
         r.set(c(v));
+    }
+
+    static Object refSet(Ref r, Object val) {
+        r.set(val)
     }
 
     /** See clojure ensure function - protects the specified reference from modifcation by another transaction */
@@ -64,6 +71,7 @@ class STM {
         Map varMap = new HashMap();
         bindings.each { key, value -> 
             // TODO: how to handle namespaces?
+            // How would I expect namespaces to work in threading these bindings through multiple classes/methods?
             Var v = RT.var("hardcodedfornow",key.toString(), key)
             v.setDynamic()
             varMap.put(v, value) 
