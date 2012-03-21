@@ -27,4 +27,8 @@ class MyStateClass {
             alter(balanceRef) { balance -> balance + amt }
         }
     }
+
+    int currentBalance() {
+        deref(balanceRef)
+    }
 }
