@@ -29,6 +29,18 @@ class STMTest {
     }
 
     @Test
+    void testReturn() {
+        assertEquals 100, returningFunction()
+    }
+
+    Object returningFunction() {
+        Ref r = new Ref(0)
+        doSync {
+            alter(r) { 100 }
+        }
+    }
+
+    @Test
     void testRefSet() {
         Ref r = new Ref(100)
         doSync {

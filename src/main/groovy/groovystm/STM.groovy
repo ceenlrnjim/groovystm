@@ -23,11 +23,10 @@ class STM {
     /** Executes the specified closure in a clojure LockingTransaction, allowing
     *   changes to Refs. Make sure an use immutable values for your Refs or you get no guarantees from the STM
     */
-    static void doSync(Closure c) {
-        LockingTransaction.runInTransaction(new Callable<Void>() {
-            public Void call() throws Exception {
-                c()
-                return null;
+    static Object doSync(Closure c) {
+        LockingTransaction.runInTransaction(new Callable<Object>() {
+            public Object call() throws Exception {
+                return c()
             }
         });
     }
@@ -37,7 +36,7 @@ class STM {
     *   See rules for the alter function in clojure. Inspired by, but definitely different than
     *   the clojure alter function.  
     */
-    static void alter(Ref r, Closure c) {
+    static Object alter(Ref r, Closure c) {
         def v = r.deref();
         r.set(c(v));
     }
