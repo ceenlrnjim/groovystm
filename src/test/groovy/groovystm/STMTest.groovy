@@ -262,10 +262,27 @@ class STMTest {
         assertEquals true, errorHandled
     }
 
+    @Test
     public void testAgentWatch() {
-        // TODO
+        boolean watchFired = false
+        Agent a = new Agent(0);
+        setErrorMode(a, AgentErrorMode.FAIL)
+
+        addWatch(a, "somekey") { key, ref, oldval, newval ->
+            watchFired = true
+        }
+
+        send(a) { v -> v + 1 }
+        Thread.sleep(1000);
+        assertTrue agentError(a) == null
+        assertTrue watchFired
     }
 
     // TODO: test validators
+    public void testValidator() {
+        // TODO: atom
+        // TODO: ref
+        // TODO: agent
+    }
 
 }

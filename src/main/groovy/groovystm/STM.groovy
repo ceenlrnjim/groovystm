@@ -121,7 +121,7 @@ class STM {
 
     /** creates vars for each entry in the map and pushes them into thread local scope
     *   inspired by the clojure binding function and using those internals, but doesn't really
-    *   exposed the concept of a Var
+    *   expose the concept of a Var
     */
     static void binding(Map bindings, Closure c) {
         Map varMap = new HashMap();
