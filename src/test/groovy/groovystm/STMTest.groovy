@@ -247,6 +247,7 @@ class STMTest {
         assertTrue agentError(a) == null
     }
 
+    @Test
     public void testAgentErrorHandler() {
         Agent a = new Agent(0)
         setErrorMode(a, AgentErrorMode.FAIL)
