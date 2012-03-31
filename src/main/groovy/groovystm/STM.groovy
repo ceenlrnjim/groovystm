@@ -107,7 +107,7 @@ class STM {
 
     /** Closure should take two arguments, the agent and the exception */
     static void setErrorHandler(Agent a, Closure handler) {
-        // TODO
+        a.setErrorHandler(new ClosureFn(handler))
     }
 
     static void errorHandler(Agent a) {

@@ -25,6 +25,7 @@ import static groovystm.STM.setErrorMode
 import static groovystm.STM.AgentErrorMode
 import static groovystm.STM.restartAgent
 import static groovystm.STM.agentError
+import static groovystm.STM.setErrorHandler
 
 class STMTest {
 
@@ -247,6 +248,17 @@ class STMTest {
     }
 
     public void testAgentErrorHandler() {
+        Agent a = new Agent(0)
+        setErrorMode(a, AgentErrorMode.FAIL)
+        boolean errorHandled = false
+
+        setErrorHandler(a) { agent, error ->
+            errorHandled = true
+        }
+
+        send(a) { throw new RuntimeException("FAIL") }
+        Thread.sleep(2000);
+        assertEquals true, errorHandled
     }
 
     public void testAgentWatch() {
