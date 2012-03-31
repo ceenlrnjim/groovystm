@@ -10,12 +10,13 @@
 package groovystm
 
 import clojure.lang.AFn
+import clojure.lang.ISeq
+import clojure.lang.RT
 
-// TODO: can I make this work based on the number of arguments in the closure
-class SwapClosureFn extends AFn {
+class ClosureFn extends AFn {
     Closure closure;
 
-    SwapClosureFn(Closure c) {
+    ClosureFn(Closure c) {
         closure = c
     }
 
@@ -23,4 +24,15 @@ class SwapClosureFn extends AFn {
     public Object invoke(Object arg1) {
         closure(arg1)
     }
+
+    @Override
+    public Object invoke(Object arg1, arg2) {
+        closure(arg1, arg2)
+    }
+
+    @Override
+    public Object invoke(Object arg1, Object arg2, Object arg3, Object arg4) {
+        closure(arg1, arg2, arg3, arg4)   
+    }
+
 }

@@ -65,7 +65,7 @@ class STM {
     *   The specified closure should take 4 arguments - key, reference, old value and new value
     */
     static void addWatch(IRef r, Object key, Closure c) {
-        r.addWatch(key, new WatchClosureFn(c));
+        r.addWatch(key, new ClosureFn(c));
     }
 
     static void removeWatch(IRef r, Object key) {
@@ -74,7 +74,7 @@ class STM {
 
     /** see clojure swap! function and atoms - closure must take the current value and return the new value */
     static Object swap(Atom a, Closure c) {
-        return a.swap(new SwapClosureFn(c))
+        return a.swap(new ClosureFn(c))
     }
 
     /** Closure should take one argument, the state of the agent.  Note that this
@@ -82,7 +82,7 @@ class STM {
     *   send function has not yet been incorporated (still trying to figure out what its doing)
     */
     static Object send(Agent a, Closure c) {
-        return a.dispatch(new SwapClosureFn(c), PersistentList.EMPTY, false)
+        return a.dispatch(new ClosureFn(c), PersistentList.EMPTY, false)
     }
 
     /** Closure should take one argument, the state of the agent.  Note that this
@@ -90,7 +90,7 @@ class STM {
     *   send function has not yet been incorporated (still trying to figure out what its doing)
     */
     static Object sendOff(Agent a, Closure c) {
-        return a.dispatch(new SwapClosureFn(c), PersistentList.EMPTY, true)
+        return a.dispatch(new ClosureFn(c), PersistentList.EMPTY, true)
     }
 
     static void setErrorMode(Agent a, AgentErrorMode mode) {
@@ -116,7 +116,7 @@ class STM {
 
     /** Closure should take one argument - the proposed new state - and return null or throw an exception if state is unacceptable */
     static void setValidator(IRef r, Closure c) {
-        r.setValidator(new SwapClosureFn(c));
+        r.setValidator(new ClosureFn(c));
     }
 
     /** creates vars for each entry in the map and pushes them into thread local scope
