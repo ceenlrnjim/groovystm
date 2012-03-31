@@ -1,9 +1,11 @@
 package groovystm
 
 import clojure.lang.Atom;
+import clojure.lang.Agent;
 import clojure.lang.Ref;
 import clojure.lang.PersistentHashMap;
 import org.junit.Test
+import static org.junit.Assert.assertTrue
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
 import static groovystm.STM.doSync
@@ -16,6 +18,13 @@ import static groovystm.STM.ensure
 import static groovystm.STM.addWatch
 import static groovystm.STM.removeWatch
 import static groovystm.STM.swap
+import static groovystm.STM.send
+import static groovystm.STM.sendOff
+import static groovystm.STM.setErrorHandler
+import static groovystm.STM.setErrorMode
+import static groovystm.STM.AgentErrorMode
+import static groovystm.STM.restartAgent
+import static groovystm.STM.agentError
 
 class STMTest {
 
@@ -148,7 +157,7 @@ class STMTest {
         assertEquals deref(a), 1
     }
 
-    @Test
+    //@Test
     void testBindings() {
         binding(['name': 'Jim', 'id': '1']) {
             withCurrentBindings { m -> 
@@ -159,6 +168,16 @@ class STMTest {
             testBindingValues()
         }
         testNoBindingValues()
+
+        BoundThread one = new BoundThread()
+        one.key = 'name'
+        one.value = 'Jim'
+        BoundThread two = new BoundThread()
+        two.key = 'name'
+        two.value = 'Igor'
+
+        new Thread(one).start();
+        new Thread(two).start();
     }
 
     void testBindingValues() {
@@ -173,4 +192,67 @@ class STMTest {
             assertEquals true, m.isEmpty()
         }
     }
+
+    void assertBindingValue(String key, String expected) {
+        withCurrentBindings { m ->
+            assertEquals expected, m[key]
+        }
+    }
+
+    private static class BoundThread implements Runnable {
+        String key
+        String value
+        
+        public void run() {
+            Thread.sleep(500);
+            binding([key: value]) {
+                assertBindingValue(key, value);
+            }
+        }
+    }
+
+    @Test
+    public void testSend() {
+        Agent a = new Agent(100)
+        a.setErrorMode(Agent.FAIL)
+
+        long sendThreadId = Thread.currentThread().getId()
+        send(a) { v -> 
+            assertTrue sendThreadId != Thread.currentThread().getId()
+            v + 100 
+        }
+        Thread.sleep(2000);
+        assertEquals null, a.getError()
+        assertEquals 200, deref(a)
+    }
+
+    @Test
+    public void testAgentError() {
+        Agent a = new Agent(0)
+        setErrorMode(a, AgentErrorMode.FAIL)
+        assertEquals Agent.FAIL, a.errorMode
+
+        send(a) { throw new RuntimeException("I FAILED!") }
+
+        Thread.sleep(2000);
+        assertTrue  agentError(a) != null
+        restartAgent(a, 0, true)
+
+        setErrorMode(a, AgentErrorMode.CONTINUE)
+        assertEquals Agent.CONTINUE, a.errorMode
+
+        send(a) { throw new RuntimeException("I FAILED!") }
+        Thread.sleep(2000);
+        assertTrue agentError(a) == null
+    }
+
+    public void testAgentErrorHandler() {
+    }
+
+    public void testAgentWatch() {
+        // TODO
+    }
+
+    // TODO: test validators
+
 }
