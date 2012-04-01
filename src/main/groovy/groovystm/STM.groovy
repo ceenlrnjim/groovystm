@@ -16,6 +16,7 @@ import clojure.lang.Ref
 import clojure.lang.RT
 import clojure.lang.Var
 import clojure.lang.IRef
+import clojure.lang.IFn
 import clojure.lang.PersistentHashMap
 import clojure.lang.PersistentList
 import clojure.lang.Associative
@@ -126,6 +127,21 @@ class STM {
     static Closure getValidator(IRef r) {
         ClosureFn fn = r.getValidator()
         fn.closure
+    }
+
+    static void await(Agent... agents) {
+        IFn awaitFn = RT.var("clojure.core", "await")
+        // TODO: is this the best way to get to an ISeq
+        awaitFn.applyTo(RT.seq(Arrays.asList(agents)))
+
+    }
+
+    static Object awaitFor(long timeoutMillis, Agent... agents) {
+        IFn awaitFn = RT.var("clojure.core", "await-for")
+        List args = new ArrayList(agents.length + 1)
+        args.add(timeoutMillis)
+        args.addAll(Arrays.asList(agents))
+        awaitFn.applyTo(RT.seq(args))
     }
 
     /** creates vars for each entry in the map and pushes them into thread local scope

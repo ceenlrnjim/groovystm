@@ -28,6 +28,8 @@ import static groovystm.STM.agentError
 import static groovystm.STM.setErrorHandler
 import static groovystm.STM.setValidator
 import static groovystm.STM.getValidator
+import static groovystm.STM.await
+import static groovystm.STM.awaitFor
 
 class STMTest {
 
@@ -224,7 +226,8 @@ class STMTest {
             assertTrue sendThreadId != Thread.currentThread().getId()
             v + 100 
         }
-        Thread.sleep(2000);
+        //Thread.sleep(2000);
+        await(a)
         assertEquals null, a.getError()
         assertEquals 200, deref(a)
     }
@@ -275,7 +278,8 @@ class STMTest {
         }
 
         send(a) { v -> v + 1 }
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
+        await(a)
         assertTrue agentError(a) == null
         assertTrue watchFired
     }
@@ -327,6 +331,37 @@ class STMTest {
         Atom a = new Atom(0)
         setValidator(a, validator)
         assertEquals validator, getValidator(a)
+    }
+
+    @Test
+    public void testAwait() {
+        // TODO: change tests above to use await
+        Agent a = new Agent(0)
+
+        send(a) { v->
+            Thread.sleep(1000)
+            v + 1 
+        }
+
+        await(a)
+        assertEquals 1, deref(a)
+
+    }
+
+    @Test
+    public void testAwaitFor() {
+        Agent a = new Agent(0)
+
+        send(a) { v->
+            Thread.sleep(1000)
+            v + 1 
+        }
+
+        def rv = awaitFor(200,a)
+        assertTrue !rv
+        rv = awaitFor(1200, a)
+        assertTrue rv
+        assertEquals 1, deref(a)
     }
 
 }
