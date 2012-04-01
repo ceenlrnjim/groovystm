@@ -26,6 +26,7 @@ import static groovystm.STM.AgentErrorMode
 import static groovystm.STM.restartAgent
 import static groovystm.STM.agentError
 import static groovystm.STM.setErrorHandler
+import static groovystm.STM.setValidator
 
 class STMTest {
 
@@ -279,10 +280,43 @@ class STMTest {
     }
 
     // TODO: test validators
+    @Test
     public void testValidator() {
-        // TODO: atom
-        // TODO: ref
-        // TODO: agent
+        // atom
+        Atom a = new Atom(0)
+        setValidator(a) { v -> v >= 0 }
+        try {
+            swap(a) { v -> v + 1 }
+            swap(a) { v -> v - 100 }
+            fail "Exception not thrown"
+        }
+        catch (Exception e) {
+            assertEquals 1, deref(a)
+        }
+
+        // ref
+        Ref r = new Ref(0)
+        setValidator(r) { v -> v >= 0 }
+        try {
+            doSync {
+                alter(r) { v -> v + 1 }
+                alter(r) { v -> v - 100 }
+            }
+            fail "Exception not thrown"
+        }
+        catch (Exception e) {
+            // here the whole transaction would be rolled back
+            assertEquals 0, deref(r)
+        }
+
+        // agent
+        Agent g = new Agent(0)
+        setValidator(g) { v -> v >= 0 }
+        setErrorMode(g, AgentErrorMode.FAIL)
+        send(g) { v -> v - 100 }
+        Thread.sleep(1000)
+        assertTrue agentError(g) != null
+        assertEquals 0, deref(g)
     }
 
 }
