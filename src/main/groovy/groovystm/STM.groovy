@@ -114,6 +114,10 @@ class STM {
         a.getErrorHandler()
     }
 
+    static void shutdownAgents() {
+        Agent.shutdown()
+    }
+
     /** Closure should take one argument - the proposed new state - and return null or throw an exception if state is unacceptable */
     static void setValidator(IRef r, Closure c) {
         r.setValidator(new ClosureFn(c));
