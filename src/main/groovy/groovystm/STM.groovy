@@ -123,6 +123,11 @@ class STM {
         r.setValidator(new ClosureFn(c));
     }
 
+    static Closure getValidator(IRef r) {
+        ClosureFn fn = r.getValidator()
+        fn.closure
+    }
+
     /** creates vars for each entry in the map and pushes them into thread local scope
     *   inspired by the clojure binding function and using those internals, but doesn't really
     *   expose the concept of a Var

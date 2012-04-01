@@ -27,6 +27,7 @@ import static groovystm.STM.restartAgent
 import static groovystm.STM.agentError
 import static groovystm.STM.setErrorHandler
 import static groovystm.STM.setValidator
+import static groovystm.STM.getValidator
 
 class STMTest {
 
@@ -317,6 +318,15 @@ class STMTest {
         Thread.sleep(1000)
         assertTrue agentError(g) != null
         assertEquals 0, deref(g)
+
+    }
+
+    @Test
+    public void testGetValidator() {
+        Closure validator = { v -> v >= 0 }
+        Atom a = new Atom(0)
+        setValidator(a, validator)
+        assertEquals validator, getValidator(a)
     }
 
 }
