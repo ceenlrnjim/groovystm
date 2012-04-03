@@ -78,20 +78,14 @@ class STM {
         return a.swap(new ClosureFn(c))
     }
 
-    /** Closure should take one argument, the state of the agent.  Note that this
-    *   implementation uses the Agent java functionality directly.  All the processing done by the clojure
-    *   send function has not yet been incorporated (still trying to figure out what its doing)
-    */
+    /** Closure should take one argument, the state of the agent and return the new value for the agent.  */
     static Object send(Agent a, Closure c) {
-        return a.dispatch(new ClosureFn(c), PersistentList.EMPTY, false)
+        executeCljFn("clojure.core", "send", [a, new ClosureFn(c)])
     }
 
-    /** Closure should take one argument, the state of the agent.  Note that this
-    *   implementation uses the Agent java functionality directly.  All the processing done by the clojure
-    *   send function has not yet been incorporated (still trying to figure out what its doing)
-    */
+    /** Closure should take one argument, the state of the agent and return the new value for the agent.  */
     static Object sendOff(Agent a, Closure c) {
-        return a.dispatch(new ClosureFn(c), PersistentList.EMPTY, true)
+        executeCljFn("clojure.core", "send-off", [a, new ClosureFn(c)])
     }
 
     static void setErrorMode(Agent a, AgentErrorMode mode) {
@@ -130,18 +124,14 @@ class STM {
     }
 
     static void await(Agent... agents) {
-        IFn awaitFn = RT.var("clojure.core", "await")
-        // TODO: is this the best way to get to an ISeq
-        awaitFn.applyTo(RT.seq(Arrays.asList(agents)))
-
+        executeCljFn("clojure.core", "await", Arrays.asList(agents))
     }
 
     static Object awaitFor(long timeoutMillis, Agent... agents) {
-        IFn awaitFn = RT.var("clojure.core", "await-for")
         List args = new ArrayList(agents.length + 1)
         args.add(timeoutMillis)
         args.addAll(Arrays.asList(agents))
-        awaitFn.applyTo(RT.seq(args))
+        executeCljFn("clojure.core", "await-for", args)
     }
 
     /** creates vars for each entry in the map and pushes them into thread local scope
@@ -177,5 +167,10 @@ class STM {
         currVals.each { var, value -> usableVals.put(var.sym.getName(), value) }
             
         c(usableVals)
+    }
+
+    /** Executes the specified clojure function with the specified arguments */
+    static Object executeCljFn(String ns, String name, List args) {
+        RT.var(ns, name).applyTo(RT.seq(args))
     }
 }

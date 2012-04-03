@@ -233,6 +233,23 @@ class STMTest {
     }
 
     @Test
+    public void testSendOff() {
+        Agent a = new Agent(100)
+        a.setErrorMode(Agent.FAIL)
+
+        long sendThreadId = Thread.currentThread().getId()
+        sendOff(a) { v -> 
+            assertTrue sendThreadId != Thread.currentThread().getId()
+            v + 100 
+        }
+        //Thread.sleep(2000);
+        await(a)
+        assertEquals null, a.getError()
+        assertEquals 200, deref(a)
+    }
+
+
+    @Test
     public void testAgentError() {
         Agent a = new Agent(0)
         setErrorMode(a, AgentErrorMode.FAIL)
