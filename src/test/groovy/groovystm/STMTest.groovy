@@ -6,7 +6,6 @@ import clojure.lang.Ref;
 import clojure.lang.Var;
 import clojure.lang.PersistentHashMap;
 import org.junit.Test
-//import groovystm.InitVar
 import static org.junit.Assert.assertTrue
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
@@ -14,7 +13,6 @@ import static groovystm.STM.doSync
 import static groovystm.STM.alter
 import static groovystm.STM.refSet
 import static groovystm.STM.binding
-//import static groovystm.STM.withCurrentBindings
 import static groovystm.STM.deref
 import static groovystm.STM.ensure
 import static groovystm.STM.addWatch
@@ -165,10 +163,10 @@ class STMTest {
         assertEquals deref(a), 1
     }
 
+    Var v = var(this.class, "v", 0);
+
     @Test
     void testBindings() {
-        //@InitVar 
-        Var v = var(this.class, "v", 0);
 
         // parens required - otherwise a string key 'v' will be used
         Thread.start {

@@ -195,16 +195,6 @@ class STM {
     *   expose the concept of a Var
     */
     static void binding(Map bindings, Closure c) {
-        /*
-        bindings.each { key, value -> 
-            // TODO: how to handle namespaces?
-            // How would I expect namespaces to work in threading these bindings through multiple classes/methods?
-            Var v = RT.var("hardcodedfornow",key.toString(), key)
-            v.setDynamic()
-            varMap.put(v, value) 
-        }
-        */
-
         Var.pushThreadBindings(PersistentHashMap.create(bindings))
         try {
             c()
@@ -213,13 +203,15 @@ class STM {
         }
     }
 
-    /** Initializes a var for the specified member of the specified class.
-    *   TODO: can we move this processing into an annotation or an AST global transformation?
-    *   Assuming for now that only dynamic vars make sense, otherwise use groovy/java variables
+    // TODO: how can I make this API simpler?  ASTTransformation?
+    // TODO: do I need to care about the symbol for the name of the var if in groovy I'm always referring the var itself?
+    // Can I make this method friendlier by auto generating some unique symbol name?  Would it matter later?
+    /**
+    *   Returns a var with the specified class as a namespace, the specified name, and the specified root value
     */
-    static Var var(Class enclosingClass, String propertyName, Object value) {
-        Namespace ns = Namespace.findOrCreate(Symbol.create(enclosingClass.getPackage().getName()));
-        Var v = Var.intern(ns, Symbol.create(propertyName), value, true);
+    static Var var(Class enclosingClass, String name, Object value) {
+        Namespace ns = Namespace.findOrCreate(Symbol.create(enclosingClass.getName()));
+        Var v = Var.intern(ns, Symbol.create(name), value, true);
         v.setDynamic(true)
         v
     }
