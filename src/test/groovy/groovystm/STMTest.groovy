@@ -3,6 +3,7 @@ package groovystm
 import clojure.lang.Atom;
 import clojure.lang.Agent;
 import clojure.lang.Ref;
+import clojure.lang.Var;
 import clojure.lang.PersistentHashMap;
 import org.junit.Test
 import static org.junit.Assert.assertTrue
@@ -12,7 +13,7 @@ import static groovystm.STM.doSync
 import static groovystm.STM.alter
 import static groovystm.STM.refSet
 import static groovystm.STM.binding
-import static groovystm.STM.withCurrentBindings
+//import static groovystm.STM.withCurrentBindings
 import static groovystm.STM.deref
 import static groovystm.STM.ensure
 import static groovystm.STM.addWatch
@@ -30,6 +31,7 @@ import static groovystm.STM.setValidator
 import static groovystm.STM.getValidator
 import static groovystm.STM.await
 import static groovystm.STM.awaitFor
+import static groovystm.STM.var
 
 class STMTest {
 
@@ -162,56 +164,28 @@ class STMTest {
         assertEquals deref(a), 1
     }
 
-    //@Test
+    @Test
     void testBindings() {
-        binding(['name': 'Jim', 'id': '1']) {
-            withCurrentBindings { m -> 
-                println m
-                assertEquals m['name'], "Jim" 
-                assertEquals m['id'],'1'
+        Var v = var(this.class, "v", 0);
+
+        binding([(v): 10]) {
+            Thread.start {
+                Thread.sleep(500)
+                assertEquals 10, deref(v)
             }
-            testBindingValues()
         }
-        testNoBindingValues()
 
-        BoundThread one = new BoundThread()
-        one.key = 'name'
-        one.value = 'Jim'
-        BoundThread two = new BoundThread()
-        two.key = 'name'
-        two.value = 'Igor'
-
-        new Thread(one).start();
-        new Thread(two).start();
-    }
-
-    void testBindingValues() {
-        withCurrentBindings { m ->
-            assertEquals m['name'], "Jim"
-            assertEquals m['id'],'1'
+        binding([(v): 20]) {
+            Thread.start {
+                Thread.sleep(500)
+                assertEquals 20, deref(v)
+            }
         }
-    }
 
-    void testNoBindingValues() {
-        withCurrentBindings { m ->
-            assertEquals true, m.isEmpty()
-        }
-    }
-
-    void assertBindingValue(String key, String expected) {
-        withCurrentBindings { m ->
-            assertEquals expected, m[key]
-        }
-    }
-
-    private static class BoundThread implements Runnable {
-        String key
-        String value
-        
-        public void run() {
-            Thread.sleep(500);
-            binding([key: value]) {
-                assertBindingValue(key, value);
+        binding(Collections.EMPTY_MAP) {
+            Thread.start {
+                Thread.sleep(500)
+                assertEquals 0, deref(v)
             }
         }
     }
@@ -383,5 +357,4 @@ class STMTest {
         assertTrue rv
         assertEquals 1, deref(a)
     }
-
 }

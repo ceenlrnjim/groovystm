@@ -21,6 +21,8 @@ import clojure.lang.IFn
 import clojure.lang.PersistentHashMap
 import clojure.lang.PersistentList
 import clojure.lang.Associative
+import clojure.lang.Namespace
+import clojure.lang.Symbol
 import java.util.concurrent.Callable
 
 class STM {
@@ -193,7 +195,7 @@ class STM {
     *   expose the concept of a Var
     */
     static void binding(Map bindings, Closure c) {
-        Map varMap = new HashMap();
+        /*
         bindings.each { key, value -> 
             // TODO: how to handle namespaces?
             // How would I expect namespaces to work in threading these bindings through multiple classes/methods?
@@ -201,8 +203,9 @@ class STM {
             v.setDynamic()
             varMap.put(v, value) 
         }
+        */
 
-        Var.pushThreadBindings(PersistentHashMap.create(varMap))
+        Var.pushThreadBindings(PersistentHashMap.create(bindings))
         try {
             c()
         } finally {
@@ -210,17 +213,15 @@ class STM {
         }
     }
 
-    /** Calls the specified closure with the current thread bindings.  The 
-    *   closure should take one argument that will be the map of variables from the
-    *   thread local
+    /** Initializes a var for the specified member of the specified class.
+    *   TODO: can we move this processing into an annotation or an AST global transformation?
+    *   Assuming for now that only dynamic vars make sense, otherwise use groovy/java variables
     */
-    static void withCurrentBindings(Closure c) {
-        // All kinds of ugly dependency on internal implementations
-        Map currVals = (Map)Var.getThreadBindings();
-        Map usableVals = new HashMap()
-        currVals.each { var, value -> usableVals.put(var.sym.getName(), value) }
-            
-        c(usableVals)
+    static Var var(Class enclosingClass, String propertyName, Object value) {
+        Namespace ns = Namespace.findOrCreate(Symbol.create(enclosingClass.getPackage().getName()));
+        Var v = Var.intern(ns, Symbol.create(propertyName), value, true);
+        v.setDynamic(true)
+        v
     }
 
     /** Executes the specified clojure function with the specified arguments */
