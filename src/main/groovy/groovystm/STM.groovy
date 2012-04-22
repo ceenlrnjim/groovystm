@@ -216,6 +216,17 @@ class STM {
         v
     }
 
+    /**
+    *   Returns a var with the specified namespace, the specified name, and the specified root value
+    */
+    static Var var(String namespace, String name, Object value) {
+        Namespace ns = Namespace.findOrCreate(Symbol.create(namespace));
+        Var v = Var.intern(ns, Symbol.create(name), value, true);
+        v.setDynamic(true)
+        v
+    }
+
+
     /** Executes the specified clojure function with the specified arguments */
     static Object executeCljFn(String ns, String name, List args) {
         RT.var(ns, name).applyTo(RT.seq(args))

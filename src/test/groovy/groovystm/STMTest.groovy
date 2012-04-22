@@ -163,7 +163,7 @@ class STMTest {
         assertEquals deref(a), 1
     }
 
-    Var v = var(this.class, "v", 0);
+    static Var v = var(STMTest.class, "v", 0);
 
     @Test
     void testBindings() {
