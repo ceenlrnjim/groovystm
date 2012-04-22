@@ -6,6 +6,7 @@ import clojure.lang.Ref;
 import clojure.lang.Var;
 import clojure.lang.PersistentHashMap;
 import org.junit.Test
+//import groovystm.InitVar
 import static org.junit.Assert.assertTrue
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
@@ -166,25 +167,27 @@ class STMTest {
 
     @Test
     void testBindings() {
+        //@InitVar 
         Var v = var(this.class, "v", 0);
 
-        binding([(v): 10]) {
-            Thread.start {
-                Thread.sleep(500)
+        // parens required - otherwise a string key 'v' will be used
+        Thread.start {
+            binding([(v): 10]) {
+                Thread.sleep(100)
                 assertEquals 10, deref(v)
             }
         }
 
-        binding([(v): 20]) {
-            Thread.start {
-                Thread.sleep(500)
+        Thread.start {
+            binding([(v): 20]) {
+                Thread.sleep(100)
                 assertEquals 20, deref(v)
             }
         }
 
-        binding(Collections.EMPTY_MAP) {
-            Thread.start {
-                Thread.sleep(500)
+        Thread.start {
+            binding(Collections.EMPTY_MAP) {
+                Thread.sleep(100)
                 assertEquals 0, deref(v)
             }
         }
