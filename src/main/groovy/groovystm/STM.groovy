@@ -25,7 +25,9 @@ import java.util.concurrent.Callable
 
 class STM {
     /** Executes the specified closure in a clojure LockingTransaction, allowing
-    *   changes to Refs. Make sure an use immutable values for your Refs or you get no guarantees from the STM
+    *   changes to Refs. Make sure an use immutable values for your Refs or you get no guarantees from the STM.
+    *   See http://clojure.org/refs for details on refs and transactions.
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/dosync for documentation of clojure dosync function.
     */
     static Object doSync(Closure c) {
         LockingTransaction.runInTransaction(new Callable<Object>() {
@@ -39,49 +41,72 @@ class STM {
     *   the ref to the value returned.  Must be executed in a doSync block 
     *   See rules for the alter function in clojure. Inspired by, but definitely different than
     *   the clojure alter function.  
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/alter for details on clojure's alter function. Note that in this implementation.
     */
     static Object alter(Ref r, Closure c) {
         def v = r.deref();
         r.set(c(v));
     }
 
+    /** Sets the value of the specified reference to the specified value.  Must be invoked in a transaction (doSync).
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/ref-set for details on the clojure function.
+    */
     static Object refSet(Ref r, Object val) {
         r.set(val)
     }
 
-    /** See clojure ensure function - protects the specified reference from modifcation by another transaction */
+    /** Protects the specified ref from modification by other transactions. 
+    *   Returns the in-transaction value of the ref.
+    */
     static Object ensure(Ref r) {
         r.touch()
         r.deref()
     }
 
+    /** In a transaction returns the in-transaction value of the ref, otherwise the most recently committed value. 
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/deref for clojure definition 
+    */
     static Object deref(IRef r) {
         r.deref();
     }
 
     /** Adds a callback that will get invoked when the value of the specified reference/atom/agent/etc. is changed.
-    *   See clojure add-watch function.
+    *   See clojure add-watch function at http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/add-watch .
     *   The specified closure should take 4 arguments - key, reference, old value and new value
     */
     static void addWatch(IRef r, Object key, Closure c) {
         r.addWatch(key, new ClosureFn(c));
     }
 
+    /** Removes the watch on the specified ref that was added with the specified key.
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/remove-watch
+    */
     static void removeWatch(IRef r, Object key) {
         r.removeWatch(key)
     }
 
-    /** see clojure swap! function and atoms - closure must take the current value and return the new value */
+    /** Atomically swaps the value on the specified atom by invoking the specified clojure.  
+    *   The closure is passed the current value of the atom and the return value is used as its new value.
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/swap!
+    */
     static Object swap(Atom a, Closure c) {
         return a.swap(new ClosureFn(c))
     }
 
-    /** Closure should take one argument, the state of the agent and return the new value for the agent.  */
+    /** Asynchronously update an agent with the return value of the specified closure.  Immediately
+    *   returns the agent.  The closure should take one argument, the current value of the agent
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/send and
+    *   http://clojure.org/agents
+    */
     static Object send(Agent a, Closure c) {
         executeCljFn("clojure.core", "send", [a, new ClosureFn(c)])
     }
 
-    /** Closure should take one argument, the state of the agent and return the new value for the agent.  */
+    /** Asynchronously updates an agent with the return value of the specified closure which potentially blocks.  Immediately
+    *   returns the agent.  The closure should take one argument, the current value of the agent
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/send-off and
+    *   http://clojure.org/agents
+    */
     static Object sendOff(Agent a, Closure c) {
         executeCljFn("clojure.core", "send-off", [a, new ClosureFn(c)])
     }
@@ -91,41 +116,71 @@ class STM {
         a.setErrorMode(mode)
     }
 
+    /** 
+    * Returns the exception thrown during an asynchronous action of the
+    * agent if the agent is failed.  Returns nil if the agent is not
+    * failed. See http://clojure.org/agents
+    */
     static Throwable agentError(Agent a) {
         a.getError()
     }
 
+    /** Restarts a failed agent with the specified new state and optionally clears out any actions
+    * remaining when it failed.  See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/restart-agent and
+    * http://clojure.org/agents
+    */
     static Object restartAgent(Agent a, Object newState, boolean clearActions) {
         a.restart(newState, clearActions)
     }
 
-    /** Closure should take two arguments, the agent and the exception */
+    /** Sets a closure that should be invoked if an agent fails or a validator doesn't pass.
+    *   Closure should take two arguments, the agent and the exception.
+    *   See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/set-error-handler!
+    */
     static void setErrorHandler(Agent a, Closure handler) {
         a.setErrorHandler(new ClosureFn(handler))
     }
 
-    static void errorHandler(Agent a) {
-        a.getErrorHandler()
+    /** Returns the error handler associated with the agent or null if none is set.
+    *   See http://clojure.org/agents
+    */
+    static Closure errorHandler(Agent a) {
+        ClosureFn handler = (ClosureFn)a.getErrorHandler()
+        handler.closure;
     }
 
+    /** Initiates a shutdown of the thread pools that back the agent
+    * system. Running actions will complete, but no new actions will be
+    * accepted. See http://clojure.org/agents
+    */
     static void shutdownAgents() {
         Agent.shutdown()
     }
 
-    /** Closure should take one argument - the proposed new state - and return null or throw an exception if state is unacceptable */
+    /** Adds a closure that will be called when the value changes.  If the value is not acceptable, validator should return false
+    *   or throw an exception.  closure must be side effect free.
+    * See http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/set-validator! .
+    * Closure should take one argument - the proposed new state - and return null or throw an exception if state is unacceptable */
     static void setValidator(IRef r, Closure c) {
         r.setValidator(new ClosureFn(c));
     }
 
+    /** Returns the validator for the specified reference or null if one is not set */
     static Closure getValidator(IRef r) {
         ClosureFn fn = r.getValidator()
         fn.closure
     }
 
+    /** blocks current thread indefinitely until all actions dispatched thus far to the specified
+    *   agents complete.  Will never return if a failed agent is restarted with clearActions true
+    */
     static void await(Agent... agents) {
         executeCljFn("clojure.core", "await", Arrays.asList(agents))
     }
 
+    /** blocks current thread indefinitely until all actions dispatched thus far to the specified
+    *   agents complete or the specified timeout elapses.
+    */
     static Object awaitFor(long timeoutMillis, Agent... agents) {
         List args = new ArrayList(agents.length + 1)
         args.add(timeoutMillis)

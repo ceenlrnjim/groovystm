@@ -25,6 +25,7 @@ import static groovystm.STM.setErrorMode
 import static groovystm.STM.restartAgent
 import static groovystm.STM.agentError
 import static groovystm.STM.setErrorHandler
+import static groovystm.STM.errorHandler
 import static groovystm.STM.setValidator
 import static groovystm.STM.getValidator
 import static groovystm.STM.await
@@ -274,9 +275,12 @@ class STMTest {
         setErrorMode(a, Agent.FAIL)
         boolean errorHandled = false
 
-        setErrorHandler(a) { agent, error ->
+        Closure handler = { agent, error ->
             errorHandled = true
         }
+
+        setErrorHandler(a, handler)
+        assertEquals handler, errorHandler(a)
 
         send(a) { throw new RuntimeException("FAIL") }
         Thread.sleep(2000);
