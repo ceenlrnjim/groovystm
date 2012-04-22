@@ -22,7 +22,6 @@ import static groovystm.STM.send
 import static groovystm.STM.sendOff
 import static groovystm.STM.setErrorHandler
 import static groovystm.STM.setErrorMode
-import static groovystm.STM.AgentErrorMode
 import static groovystm.STM.restartAgent
 import static groovystm.STM.agentError
 import static groovystm.STM.setErrorHandler
@@ -252,7 +251,7 @@ class STMTest {
     @Test
     public void testAgentError() {
         Agent a = new Agent(0)
-        setErrorMode(a, AgentErrorMode.FAIL)
+        setErrorMode(a, Agent.FAIL)
         assertEquals Agent.FAIL, a.errorMode
 
         send(a) { throw new RuntimeException("I FAILED!") }
@@ -261,7 +260,7 @@ class STMTest {
         assertTrue  agentError(a) != null
         restartAgent(a, 0, true)
 
-        setErrorMode(a, AgentErrorMode.CONTINUE)
+        setErrorMode(a, Agent.CONTINUE)
         assertEquals Agent.CONTINUE, a.errorMode
 
         send(a) { throw new RuntimeException("I FAILED!") }
@@ -272,7 +271,7 @@ class STMTest {
     @Test
     public void testAgentErrorHandler() {
         Agent a = new Agent(0)
-        setErrorMode(a, AgentErrorMode.FAIL)
+        setErrorMode(a, Agent.FAIL)
         boolean errorHandled = false
 
         setErrorHandler(a) { agent, error ->
@@ -288,7 +287,7 @@ class STMTest {
     public void testAgentWatch() {
         boolean watchFired = false
         Agent a = new Agent(0);
-        setErrorMode(a, AgentErrorMode.FAIL)
+        setErrorMode(a, Agent.FAIL)
 
         addWatch(a, "somekey") { key, ref, oldval, newval ->
             watchFired = true
@@ -334,7 +333,7 @@ class STMTest {
         // agent
         Agent g = new Agent(0)
         setValidator(g) { v -> v >= 0 }
-        setErrorMode(g, AgentErrorMode.FAIL)
+        setErrorMode(g, Agent.FAIL)
         send(g) { v -> v - 100 }
         Thread.sleep(1000)
         assertTrue agentError(g) != null

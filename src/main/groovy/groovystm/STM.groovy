@@ -12,6 +12,7 @@ package groovystm
 import clojure.lang.LockingTransaction
 import clojure.lang.Atom
 import clojure.lang.Agent
+import clojure.lang.Keyword
 import clojure.lang.Ref
 import clojure.lang.RT
 import clojure.lang.Var
@@ -23,9 +24,6 @@ import clojure.lang.Associative
 import java.util.concurrent.Callable
 
 class STM {
-    static enum AgentErrorMode {
-        FAIL, CONTINUE
-    }
     /** Executes the specified closure in a clojure LockingTransaction, allowing
     *   changes to Refs. Make sure an use immutable values for your Refs or you get no guarantees from the STM
     */
@@ -88,8 +86,9 @@ class STM {
         executeCljFn("clojure.core", "send-off", [a, new ClosureFn(c)])
     }
 
-    static void setErrorMode(Agent a, AgentErrorMode mode) {
-        a.setErrorMode(mode == AgentErrorMode.FAIL ? Agent.FAIL : Agent.CONTINUE)
+    /** Sets the error mode of the agent - valid values are Agent.FAIL or Agent.CONTINUE */
+    static void setErrorMode(Agent a, Keyword mode) {
+        a.setErrorMode(mode)
     }
 
     static Throwable agentError(Agent a) {
