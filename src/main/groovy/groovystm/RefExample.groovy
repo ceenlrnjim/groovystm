@@ -1,33 +1,12 @@
 package groovystm
 
 import clojure.lang.Ref;
-import clojure.lang.Var;
-import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentVector;
 import java.util.concurrent.*;
 
 import static groovystm.STM.doSync
 import static groovystm.STM.alter
-import static groovystm.STM.refSet
-import static groovystm.STM.binding
 import static groovystm.STM.deref
-import static groovystm.STM.ensure
-import static groovystm.STM.addWatch
-import static groovystm.STM.removeWatch
-import static groovystm.STM.swap
-import static groovystm.STM.send
-import static groovystm.STM.sendOff
-import static groovystm.STM.setErrorHandler
-import static groovystm.STM.setErrorMode
-import static groovystm.STM.restartAgent
-import static groovystm.STM.agentError
-import static groovystm.STM.setErrorHandler
-import static groovystm.STM.errorHandler
-import static groovystm.STM.setValidator
-import static groovystm.STM.getValidator
-import static groovystm.STM.await
-import static groovystm.STM.awaitFor
-import static groovystm.STM.var
 
 /** groovy version of the example at http://clojure.org/refs 
 (defn run [nvecs nitems nthreads niters]
@@ -114,11 +93,9 @@ public class RefExample {
     public void run() {
         ExecutorService es = new ForkJoinPool()
         List callables = new ArrayList(threadCount)
-        //for (int i=0;i<threadCount;i++) {
         for (i in 0..<threadCount) {
             callables.add(new Callable<Void>() {
                 public Void call() {
-                    //for (int j=0;j<threadIterations;j++) {
                     for (j in 0..<threadIterations) {
                         swap();
                     }
